@@ -2,14 +2,14 @@ CC = clang
 CFLAGS=-Wall -Wextra -Werror -std=c99 -g
 
 .PHONY: all
-all: main
+all: clox
 
-main: main.o
-	$(CC) $(CFLAGS) main.o -o main
+clox: clox.o chunk.o
+	$(CC) $(CFLAGS) clox.o -o clox
 
-main.o: main.c
-	$(CC) $(CFLAGS) -c main.c -o main.o
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm main
-	rm *.o
+	rm -rf clox
+	rm -rf *.o

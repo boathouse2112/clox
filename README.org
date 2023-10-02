@@ -1,0 +1,16 @@
+#+title: Clox Interpreter
+
+* Bytecode
+Resembles machine code.
+Targets idealized machine.
+
+Compiler -> Bytecode -> VM
+
+** Virtual Machine
+Needed to /run/ the bytecode
+Adds overhead
+Gives portability (write it in C)
+
+** Structure
+*** Opcode
+1-byte, controls the kind of instruction
