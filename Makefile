@@ -1,11 +1,13 @@
 CC = clang
 CFLAGS=-Wall -Wextra -Werror -std=c99 -g
 
+objects = clox.o chunk.o debug.o value.o memory.o
+
 .PHONY: all
 all: clox
 
-clox: clox.o chunk.o
-	$(CC) $(CFLAGS) clox.o -o clox
+clox: $(objects)
+	$(CC) $(CFLAGS) $(objects) -o clox
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
