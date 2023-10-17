@@ -22,7 +22,7 @@ int line_numbers_get(LineNumbers *lines, int bytecode_idx) {
             return line_number.line;
         }
     }
-    fprintf(stderr, "Bytecode index %d does not have a matching line number", bytecode_idx);
+    fprintf(stderr, "Bytecode index %d does not have a matching line number\n", bytecode_idx);
     exit(1);
 }
 
