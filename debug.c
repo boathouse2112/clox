@@ -1,4 +1,5 @@
 #include <printf.h>
+#include <stdlib.h>
 #include "debug.h"
 
 // ==== Helpers ====
@@ -9,19 +10,21 @@ static int instruction_simple(const char *name, int offset) {
 }
 
 static int instruction_constant(const char *name, Chunk *chunk, int offset) {
-    uint8_t constant = chunk->bytecode[offset + 1];
-    printf("%-16s [%4d] ", name, constant);
-    value_print(chunk->constants.data[constant]);
-    printf("\n");
-    return offset + 2;
-}
+    OpCode opcode = chunk->bytecode[offset];
 
-static int instruction_constant_long(const char *name, Chunk *chunk, int offset) {
-    uint8_t constant = chunk->bytecode[offset + 1];
-    printf("%-16s [%4d] ", name, constant);
-    value_print(chunk->constants.data[constant]);
+    int constant_idx = chunk_get_constant_idx(chunk, offset);
+    printf("%-16s [%4d] ", name, constant_idx);
+    Value constant = chunk_get_constant(chunk, offset);
+    value_print(constant);
     printf("\n");
-    return offset + 2;
+
+    switch (opcode) {
+        case OP_CONSTANT: return offset + 2;
+        case OP_CONSTANT_LONG: return offset + 4;
+        default:
+            fprintf(stderr, "instruction_constant: Opcode %#X is not a constant opcode", opcode);
+            exit(1);
+    }
 }
 
 // ==== Disassemble ====
@@ -54,7 +57,7 @@ int disassemble_instruction(Chunk *chunk, int offset) {
         case OP_CONSTANT:
             return instruction_constant("OP_CONSTANT", chunk, offset);
         case OP_CONSTANT_LONG:
-
+            return instruction_constant("OP_CONSTANT_LONG", chunk, offset);
         case OP_RETURN:
             return instruction_simple("OP_RETURN", offset);
         default:

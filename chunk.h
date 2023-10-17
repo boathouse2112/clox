@@ -6,7 +6,7 @@
 
 typedef enum {
     OP_CONSTANT,
-    OP_CONSTANT_LONG,
+    OP_CONSTANT_LONG, // Big-endian ordering
     OP_RETURN,
 } OpCode;
 
@@ -26,7 +26,7 @@ typedef struct {
 void line_numbers_init(LineNumbers *lines);
 void line_numbers_free(LineNumbers *lines);
 /// Get the line number of the nth bytecode
-int line_numbers_get(LineNumbers *lines, int idx);
+int line_numbers_get(LineNumbers *lines, int bytecode_idx);
 void line_numbers_push(LineNumbers *lines, int line);
 
 /// ArrayList containing bytecode instructions
@@ -42,6 +42,14 @@ void chunk_init(Chunk *chunk);
 void chunk_free(Chunk *chunk);
 
 void chunk_push(Chunk *chunk, uint8_t byte, int line);
-int chunk_add_constant(Chunk *chunk, Value value);
+
+// TODO -- Test pushing a long constant
+
+int chunk_get_constant_idx(Chunk *chunk, int bytecode_idx);
+/// Given the index of a constant-load instruction, reads and returns that constant.
+Value chunk_get_constant(Chunk *chunk, int bytecode_idx);
+/// Add the given constant to the constant pool
+/// Pushes an appropriate constant-load instruction to chunk->bytecode
+int chunk_push_constant(Chunk *chunk, Value value, int line);
 
 #endif // CHUNK_H_

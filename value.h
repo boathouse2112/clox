@@ -15,7 +15,8 @@ typedef struct {
 } ValueArray;
 
 void value_array_init(ValueArray *value_array);
-void value_array_push(ValueArray *value_array, Value value);
+/// @return the index of the pushed value
+int value_array_push(ValueArray *value_array, Value value);
 void value_array_free(ValueArray *value_array);
 
 #endif //CLOX_VALUE_H

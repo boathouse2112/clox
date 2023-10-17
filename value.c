@@ -12,7 +12,7 @@ void value_array_init(ValueArray *arr) {
     arr->data = NULL;
 }
 
-void value_array_push(ValueArray *arr, Value value) {
+int value_array_push(ValueArray *arr, Value value) {
     if (arr->capacity < arr->length + 1) {
         int old_capacity = arr->capacity;
         arr->capacity = grow_capacity(old_capacity);
@@ -21,6 +21,7 @@ void value_array_push(ValueArray *arr, Value value) {
 
     arr->data[arr->length] = value;
     arr->length += 1;
+    return arr->length - 1;
 }
 
 void value_array_free(ValueArray *arr) {
