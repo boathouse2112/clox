@@ -1,7 +1,7 @@
 CC = clang
 CFLAGS=-Wall -Wextra -Werror -std=c99 -g
 
-source = clox.c chunk.c debug.c value.c memory.c vm.c
+source = clox.c chunk.c debug.c value.c memory.c vm.c compiler.c scanner.c
 objects = ${patsubst %.c,build/%.o,${source}}
 
 .PHONY: all

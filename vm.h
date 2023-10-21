@@ -24,7 +24,7 @@ void vm_free();
 void vm_stack_push(Value value);
 Value vm_stack_pop();
 
-InterpretResult vm_interpret(Chunk *chunk);
+InterpretResult vm_interpret(const char *source);
 
 #undef STACK_MAX
 

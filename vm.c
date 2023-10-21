@@ -2,6 +2,7 @@
 #include <printf.h>
 #include "vm.h"
 #include "debug.h"
+#include "compiler.h"
 
 // Global variables bad but...
 Vm vm;
@@ -98,8 +99,23 @@ Value vm_stack_pop() {
     return *vm.stack_top;
 }
 
-InterpretResult vm_interpret(Chunk *chunk) {
-    vm.chunk = chunk;
+InterpretResult vm_interpret(const char *source) {
+    Chunk chunk;
+    chunk_init(&chunk);
+    bool compile_success = compiler_compile(source, &chunk);
+    if (!compile_success) {
+        chunk_free(&chunk);
+        return INTERPRET_COMPILE_ERROR;
+    }
+
+    vm.chunk = &chunk;
     vm.ip = vm.chunk->bytecode;
-    return run();
+
+#ifdef DEBUG_TRACE_EXECUTION
+    printf("==== %s ====", "execution");
+#endif
+    InterpretResult result = run();
+
+    chunk_free(&chunk);
+    return result;
 }

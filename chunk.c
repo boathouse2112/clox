@@ -108,13 +108,14 @@ Value chunk_get_constant(Chunk *chunk, int bytecode_idx) {
     return chunk->constants.data[constant_idx];
 }
 
+/// Add the given value to the constants pool
 int chunk_push_constant(Chunk *chunk, Value value, int line) {
     int constant_idx = value_array_push(&chunk->constants, value);
-    if (constant_idx < 0xFF) {
+    if (constant_idx <= 0xFF) {
         // Idx fits in a single byte.
         chunk_push(chunk, OP_CONSTANT, line);
         chunk_push(chunk, constant_idx, line);
-    } else if (constant_idx < 0xFFFFFF) {
+    } else if (constant_idx <= 0xFFFFFF) {
         // Idx fits in 3 bytes
         uint8_t idx_high = (constant_idx >> 16) & 0xFF;
         uint8_t idx_mid = (constant_idx >> 8) & 0xFF;
