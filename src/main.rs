@@ -1,9 +1,10 @@
 mod parser;
 mod scanner;
-mod stack;
+// mod stack;
 mod value;
 mod vm;
 
+use crate::parser::Parser;
 use crate::scanner::{Scanner, TokenType};
 use std::{env, io};
 
@@ -32,15 +33,9 @@ fn main() {
     //     eprintln!("Usage: clox <file>");
     // }
 
-    let program = "(){},.-+;/*";
-    let mut scanner = Scanner::new(program);
-    let mut tokens = Vec::new();
-    loop {
-        let token = scanner.scan();
-        tokens.push(token);
-        if token.token_type == TokenType::Eof {
-            break;
-        }
-    }
-    println!("{:?}", tokens);
+    let program = "2 * 2 * 2";
+    let scanner = Scanner::new(program);
+    let parser = Parser::new(scanner);
+    let chunk = parser.compile();
+    println!();
 }

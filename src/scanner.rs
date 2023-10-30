@@ -1,6 +1,7 @@
 use peekmore::{PeekMore, PeekMoreIterator};
 use std::str::Chars;
 
+use crate::parser::Precedence;
 use TokenType::*;
 
 #[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Copy, Clone)]
@@ -52,7 +53,19 @@ pub enum TokenType {
     Eof,
 }
 
-#[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
+impl TokenType {
+    /// Precedence of this token type as an infix operator
+    /// If this token type is not an infix operator, returns Precedence::None
+    pub fn infix_precedence(&self) -> Precedence {
+        match self {
+            Plus | Minus => Precedence::Term,
+            Star | Slash => Precedence::Factor,
+            _ => Precedence::None,
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Token<'text> {
     pub token_type: TokenType,
     pub text: &'text str,

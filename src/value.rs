@@ -1,5 +1,5 @@
-
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Value {
-    NIL,
-    NUMBER(f64),
+    Nil,
+    Number(f64),
 }
