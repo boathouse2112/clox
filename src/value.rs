@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+use Value::*;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Value {
@@ -8,8 +9,8 @@ pub enum Value {
 }
 
 impl Value {
-    pub fn is_number(&self) -> bool {
-        matches!(self, Value::Number(_))
+    pub fn is_falsey(&self) -> bool {
+        matches!(self, Nil | Bool(false))
     }
 }
 

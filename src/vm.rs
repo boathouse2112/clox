@@ -1,5 +1,3 @@
-mod stack;
-
 use crate::parser::{Chunk, ConstantIdx};
 use crate::value::Value;
 use crate::vm::InterpretError::RuntimeError;
@@ -16,6 +14,8 @@ pub enum OpCode {
     False,
 
     Negate,
+    Not,
+
     Add,
     Subtract,
     Multiply,
@@ -74,6 +74,7 @@ impl Vm {
             let op = self.read_byte();
             match op {
                 OpCode::Nop => {}
+
                 OpCode::Constant(constant_idx) => {
                     let constant = self.chunk.get_constant(constant_idx);
                     self.stack.push(constant);
@@ -81,11 +82,15 @@ impl Vm {
                 OpCode::Nil => self.stack.push(Value::Nil),
                 OpCode::True => self.stack.push(Value::Bool(true)),
                 OpCode::False => self.stack.push(Value::Bool(false)),
+
                 OpCode::Negate => self.negate()?,
+                OpCode::Not => self.not()?,
+
                 OpCode::Add => self.binary(f64::add)?,
                 OpCode::Subtract => self.binary(f64::sub)?,
                 OpCode::Multiply => self.binary(f64::mul)?,
                 OpCode::Divide => self.binary(f64::div)?,
+
                 OpCode::Return => return self.ret(),
             }
         }
@@ -102,19 +107,29 @@ impl Vm {
     }
 
     fn negate(&mut self) -> InterpretResult {
-        let negated = self
+        let operand = self
             .stack
             .pop()
             .expect("Negate called without value on stack");
-        match negated {
+        match operand {
             Value::Number(n) => self.stack.push(Value::Number(-n)),
             _ => {
                 return Self::runtime_error(format!(
                     "Value {} to be negated is not a number",
-                    negated
+                    operand
                 ));
             }
         }
+        Ok(())
+    }
+
+    fn not(&mut self) -> InterpretResult {
+        let operand = self
+            .stack
+            .pop()
+            .expect("Boolean Not called without value on stack");
+        let result = Value::Bool(operand.is_falsey());
+        self.stack.push(result);
         Ok(())
     }
 

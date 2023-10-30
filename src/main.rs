@@ -3,10 +3,10 @@ mod scanner;
 mod value;
 mod vm;
 
-use crate::parser::{ParseResult, Parser};
-use crate::scanner::{Scanner, TokenType};
-use crate::vm::{InterpretError, InterpretResult, Vm};
-use std::{env, io};
+use crate::parser::Parser;
+use crate::scanner::Scanner;
+use crate::vm::{InterpretError, Vm};
+use std::io;
 
 fn repl() {
     let stdin = io::stdin();

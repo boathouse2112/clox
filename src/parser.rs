@@ -118,7 +118,6 @@ pub struct Parser<'text> {
 
     current: Option<Token<'text>>,
     next: Token<'text>,
-    had_error: bool,
 }
 
 impl<'text> Parser<'text> {
@@ -131,7 +130,6 @@ impl<'text> Parser<'text> {
 
             current: None,
             next,
-            had_error: false,
         }
     }
 
@@ -153,7 +151,7 @@ impl<'text> Parser<'text> {
         let next = self.scanner.scan();
         match next.token_type {
             TokenType::Error => return Err("Error token".to_string()),
-            _ => self.next = next.into(),
+            _ => self.next = next,
         }
         Ok(())
     }
@@ -200,6 +198,7 @@ impl<'text> Parser<'text> {
     fn unary(&mut self, token_type: TokenType) -> ParseResult<()> {
         self.parse_higher_precedence(Precedence::Unary)?;
         match token_type {
+            TokenType::Bang => self.chunk.push(OpCode::Not, 0),
             TokenType::Minus => self.chunk.push(OpCode::Negate, 0),
             _ => panic!("Invalid unary token type: {:?}", token_type),
         }
@@ -231,7 +230,7 @@ impl<'text> Parser<'text> {
     fn apply_prefix_fn(&mut self, token_type: TokenType) -> ParseResult<()> {
         match token_type {
             TokenType::LeftParen => self.grouping(),
-            TokenType::Minus => self.unary(token_type),
+            TokenType::Minus | TokenType::Bang => self.unary(token_type),
             TokenType::Number => self.number(),
             TokenType::True | TokenType::False | TokenType::Nil => self.literal(token_type, 0),
             _ => Ok(()),
