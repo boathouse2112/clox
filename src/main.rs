@@ -1,41 +1,49 @@
 mod parser;
 mod scanner;
-// mod stack;
 mod value;
 mod vm;
 
-use crate::parser::Parser;
+use crate::parser::{ParseResult, Parser};
 use crate::scanner::{Scanner, TokenType};
+use crate::vm::{InterpretError, InterpretResult, Vm};
 use std::{env, io};
 
-// fn repl() {
-//     let stdin = io::stdin();
-//     let mut line = String::new();
-//     loop {
-//         line.clear();
-//         _ = stdin.read_line(&mut line).or_else(|| {
-//             panic!("Invalid UTF-8 input.");
-//         });
-//
-//         let vm = Vm::new(chunk);
-//         vm.interpret(&line);
-//     }
-// }
+fn repl() {
+    let stdin = io::stdin();
+    let mut line = String::new();
+    loop {
+        line.clear();
+        _ = stdin.read_line(&mut line).expect("Invalid input");
+
+        let scanner = Scanner::new(&line);
+        let parser = Parser::new(scanner);
+        let chunk = match parser.compile() {
+            Ok(chunk) => chunk,
+            Err(msg) => {
+                println!("{}", msg);
+                break;
+            }
+        };
+
+        let vm = Vm::new(chunk);
+        match vm.interpret() {
+            Ok(_) => {}
+            Err(err) => match err {
+                InterpretError::RuntimeError(msg) => {
+                    println!("{}", msg);
+                }
+            },
+        }
+    }
+}
 
 fn main() {
-    // let args: Vec<String> = env::args().collect();
+    repl();
 
-    // if args.len() == 1 {
-    //     repl(vm);
-    // } else if args.len() == 2 {
-    //     run_file(&args[1]);
-    // } else {
-    //     eprintln!("Usage: clox <file>");
-    // }
-
-    let program = "2 * 2 * 2";
-    let scanner = Scanner::new(program);
-    let parser = Parser::new(scanner);
-    let chunk = parser.compile();
-    println!();
+    // let program = "2 * 2 * 2";
+    // let scanner = Scanner::new(program);
+    // let parser = Parser::new(scanner);
+    // let chunk = parser.compile().unwrap();
+    // let interpret_result = Vm::new(chunk).interpret();
+    // println!("{:?}", interpret_result);
 }

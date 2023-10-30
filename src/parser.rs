@@ -1,8 +1,7 @@
-mod parse_rule;
-
 use crate::scanner::{Scanner, Token, TokenType};
 use crate::value::Value;
 use crate::vm::OpCode;
+use std::fmt::{Debug, Display, Formatter};
 
 #[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub enum Precedence {
@@ -41,7 +40,14 @@ impl Precedence {
 
 /// TODO -- This is an unsafe system. Is there a way to do safe constant pooling?
 #[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Copy, Clone)]
-pub struct ConstantIdx(usize);
+pub struct ConstantIdx(pub usize);
+
+/// Just delegates to usize
+impl Display for ConstantIdx {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.0, f)
+    }
+}
 
 pub struct Chunk {
     bytecode: Vec<OpCode>,
@@ -58,6 +64,32 @@ impl Chunk {
         }
     }
 
+    pub fn disassemble_instruction(&self, idx: usize) {
+        print!("{:04X}", idx);
+        let line_number = self.lines[idx];
+
+        // If there's multiple ops on the same line, print it with a pipe instead of line number.
+        if idx > 0 && line_number == self.lines[idx - 1] {
+            print!("   | ");
+        } else {
+            print!("{:4} ", line_number);
+        }
+
+        let op = self.bytecode[idx];
+        match op {
+            OpCode::Constant(constant_idx) => self.disassemble_constant(constant_idx),
+            _ => println!("{:?}", op),
+        }
+    }
+
+    pub fn get_opcode(&self, idx: usize) -> OpCode {
+        self.bytecode[idx]
+    }
+
+    pub fn get_constant(&self, constant_idx: ConstantIdx) -> Value {
+        self.constants[constant_idx.0]
+    }
+
     pub fn push(&mut self, op: OpCode, line: u32) {
         self.bytecode.push(op);
         self.lines.push(line);
@@ -70,6 +102,11 @@ impl Chunk {
         let constant_idx = ConstantIdx(self.constants.len() - 1);
         let op = OpCode::Constant(constant_idx);
         self.push(op, line);
+    }
+
+    fn disassemble_constant(&self, constant_idx: ConstantIdx) {
+        let value = self.constants[constant_idx.0];
+        println!("{:-16} [{:4}] {}", "Constant", constant_idx, value);
     }
 }
 
