@@ -58,6 +58,8 @@ impl TokenType {
     /// If this token type is not an infix operator, returns Precedence::None
     pub fn infix_precedence(&self) -> Precedence {
         match self {
+            EqualEqual | BangEqual => Precedence::Equality,
+            Greater | GreaterEqual | Less | LessEqual => Precedence::Comparison,
             Plus | Minus => Precedence::Term,
             Star | Slash => Precedence::Factor,
             _ => Precedence::None,

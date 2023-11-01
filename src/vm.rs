@@ -3,9 +3,10 @@ use crate::value::Value;
 use crate::vm::InterpretError::RuntimeError;
 use std::ops::{Add, Div, Mul, Sub};
 
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub enum OpCode {
     Nop, // Do nothing
+    Return,
 
     Constant(ConstantIdx),
     // LongConstant(LongConstantIdx),
@@ -20,7 +21,9 @@ pub enum OpCode {
     Subtract,
     Multiply,
     Divide,
-    Return,
+    Equal,
+    Greater,
+    Less,
 }
 
 pub type InterpretResult = Result<(), InterpretError>;
@@ -74,6 +77,7 @@ impl Vm {
             let op = self.read_byte();
             match op {
                 OpCode::Nop => {}
+                OpCode::Return => return self.ret(),
 
                 OpCode::Constant(constant_idx) => {
                     let constant = self.chunk.get_constant(constant_idx);
@@ -90,8 +94,9 @@ impl Vm {
                 OpCode::Subtract => self.binary(f64::sub)?,
                 OpCode::Multiply => self.binary(f64::mul)?,
                 OpCode::Divide => self.binary(f64::div)?,
-
-                OpCode::Return => return self.ret(),
+                OpCode::Equal => self.equal()?,
+                OpCode::Greater => self.greater()?,
+                OpCode::Less => self.less()?,
             }
         }
     }
@@ -129,6 +134,56 @@ impl Vm {
             .pop()
             .expect("Boolean Not called without value on stack");
         let result = Value::Bool(operand.is_falsey());
+        self.stack.push(result);
+        Ok(())
+    }
+
+    fn equal(&mut self) -> InterpretResult {
+        let second = self
+            .stack
+            .pop()
+            .expect("Binary operation called without two operands");
+        let first = self
+            .stack
+            .pop()
+            .expect("Binary operation called without two operands");
+        let result = Value::Bool(first == second);
+        self.stack.push(result);
+        Ok(())
+    }
+
+    fn greater(&mut self) -> InterpretResult {
+        let second = self
+            .stack
+            .pop()
+            .expect("Binary operation called without two operands");
+        let first = self
+            .stack
+            .pop()
+            .expect("Binary operation called without two operands");
+        let result = match (first, second) {
+            (Value::Number(first), Value::Number(second)) => first > second,
+            _ => false,
+        };
+        let result = Value::Bool(result);
+        self.stack.push(result);
+        Ok(())
+    }
+
+    fn less(&mut self) -> InterpretResult {
+        let second = self
+            .stack
+            .pop()
+            .expect("Binary operation called without two operands");
+        let first = self
+            .stack
+            .pop()
+            .expect("Binary operation called without two operands");
+        let result = match (first, second) {
+            (Value::Number(first), Value::Number(second)) => first < second,
+            _ => false,
+        };
+        let result = Value::Bool(result);
         self.stack.push(result);
         Ok(())
     }

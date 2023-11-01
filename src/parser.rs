@@ -213,17 +213,35 @@ impl<'text> Parser<'text> {
     ) -> ParseResult<()> {
         self.parse_higher_precedence(precedence.increment())?;
 
-        let op = match token_type {
-            TokenType::Plus => Ok(OpCode::Add),
-            TokenType::Minus => Ok(OpCode::Subtract),
-            TokenType::Star => Ok(OpCode::Multiply),
-            TokenType::Slash => Ok(OpCode::Divide),
-            _ => Err(format!(
-                "Token type {:?} is not a binary operation.",
-                token_type
-            )),
-        }?;
-        self.chunk.push(op, line);
+        match token_type {
+            TokenType::Plus => self.chunk.push(OpCode::Add, line),
+            TokenType::Minus => self.chunk.push(OpCode::Subtract, line),
+            TokenType::Star => self.chunk.push(OpCode::Multiply, line),
+            TokenType::Slash => self.chunk.push(OpCode::Divide, line),
+
+            TokenType::BangEqual => {
+                self.chunk.push(OpCode::Equal, line);
+                self.chunk.push(OpCode::Not, line);
+            }
+            TokenType::EqualEqual => self.chunk.push(OpCode::Equal, line),
+            TokenType::Greater => self.chunk.push(OpCode::Greater, line),
+            TokenType::GreaterEqual => {
+                self.chunk.push(OpCode::Less, line);
+                self.chunk.push(OpCode::Not, line);
+            }
+            TokenType::Less => self.chunk.push(OpCode::Less, line),
+            TokenType::LessEqual => {
+                self.chunk.push(OpCode::Greater, line);
+                self.chunk.push(OpCode::Not, line);
+            }
+
+            _ => {
+                return Err(format!(
+                    "Token type {:?} is not a binary operation.",
+                    token_type
+                ))
+            }
+        };
         Ok(())
     }
 
@@ -245,6 +263,12 @@ impl<'text> Parser<'text> {
             TokenType::Star | TokenType::Slash => {
                 self.binary(token_type, token_type.infix_precedence(), 0)
             }
+            TokenType::BangEqual
+            | TokenType::EqualEqual
+            | TokenType::Greater
+            | TokenType::GreaterEqual
+            | TokenType::Less
+            | TokenType::LessEqual => self.binary(token_type, token_type.infix_precedence(), 0),
             _ => Ok(()),
         }
     }
